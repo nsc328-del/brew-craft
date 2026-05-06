@@ -85,10 +85,11 @@ function handlePlayClick(gx, gy) {
       }
     }
 
-    // Serve/trash buttons
+    // Serve/trash buttons (mid-line splits the two)
     var btnX = iStartX + IBAR_ITEMS.length * (IBAR_SLOT_W + IBAR_GAP) + 4;
+    var btnH = Lang === 'zh' ? 14 : 13;
     if (gx >= btnX && gx < btnX + 36) {
-      if (gy < IBAR_Y + 12) serveDrink();
+      if (gy < IBAR_Y + btnH) serveDrink();
       else trashCup();
     }
     return;

@@ -90,6 +90,15 @@ function generateOrder() {
 }
 
 function updateOrders() {
+  // Auto-select if exactly one order is waiting and nothing is selected
+  if (GameState.selectedOrder === -1) {
+    var waitingIdxs = [];
+    for (var w = 0; w < GameState.currentOrders.length; w++) {
+      if (GameState.currentOrders[w].status === 'waiting') waitingIdxs.push(w);
+    }
+    if (waitingIdxs.length === 1) GameState.selectedOrder = waitingIdxs[0];
+  }
+
   for (var i = GameState.currentOrders.length - 1; i >= 0; i--) {
     var order = GameState.currentOrders[i];
     if (order.status !== 'waiting') continue;

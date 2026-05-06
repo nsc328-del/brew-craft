@@ -159,22 +159,20 @@ function drawOrderArea(ctx) {
     var recipe = RECIPES[order.drink];
     if (recipe) {
       var drinkText = t(recipe.nameKey || 'drink_' + order.drink);
-      drawTextLoc(ctx, drinkText, ox + 30, oy + 6, PALETTE.uiText, 1);
-      drawText(ctx, '$' + recipe.price, ox + 30, oy + 16, PALETTE.uiHighlight, 1);
+      drawTextLoc(ctx, drinkText, ox + 30, oy + 4, PALETTE.uiText, 1);
+      drawText(ctx, '$' + recipe.price, ox + 30, oy + 18, PALETTE.uiHighlight, 1);
     }
 
-    // Customer name + comment
-    drawTextLoc(ctx, order.customer.name, ox + 30, oy + 26, PALETTE.cream, 1);
+    drawTextLoc(ctx, order.customer.name, ox + 30, oy + 30, PALETTE.cream, 1);
 
-    // Personality comment (small text)
     var pData = PERSONALITIES[pers];
     if (pData) {
-      drawTextLoc(ctx, t(pData.commentKey), ox + 4, oy + 38, PALETTE.cupShadow, 1);
+      drawTextLoc(ctx, t(pData.commentKey), ox + 4, oy + 44, PALETTE.cupShadow, 1);
     }
 
     var barW = w - 8;
     var barX = ox + 4;
-    var barY = oy + 54;
+    var barY = oy + 58;
     rect(ctx, barX, barY, barW, 5, PALETTE.metalDark);
     var patienceW = Math.floor(barW * order.customer.patience / 100);
     var barColor = order.customer.patience > 60 ? PALETTE.uiSuccess :
@@ -189,9 +187,9 @@ function drawOrderArea(ctx) {
 
 // ---- Ingredient Bar ----
 var IBAR_ITEMS = ['new_cup', 'espresso_shot', 'hot_water', 'steamed_milk', 'milk_foam', 'chocolate_syrup', 'whipped_cream', 'caramel_syrup'];
-var IBAR_Y = 168;
-var IBAR_SLOT_W = 24;
-var IBAR_SLOT_H = 28;
+var IBAR_Y = 166;
+var IBAR_SLOT_W = 28;
+var IBAR_SLOT_H = 30;
 var IBAR_GAP = 2;
 
 function getIBarStartX() {
@@ -223,53 +221,51 @@ function drawIngredientBar(ctx) {
 
     var icon = SpriteCache.icons[type];
     if (icon) {
-      ctx.drawImage(icon, ix + Math.floor((IBAR_SLOT_W - 16) / 2), iy + 2);
+      ctx.drawImage(icon, ix + Math.floor((IBAR_SLOT_W - 16) / 2), iy + 1);
     }
 
     var label = getLabelForType(type);
-    drawTextLocCentered(ctx, label, ix + IBAR_SLOT_W / 2, iy + 20, PALETTE.cream, 1);
+    // Chinese (Zpix 12px) needs more vertical room than bitmap font (7px)
+    var labelY = containsChinese(label) ? iy + 17 : iy + 22;
+    drawTextLocCentered(ctx, label, ix + IBAR_SLOT_W / 2, labelY, PALETTE.cream, 1);
   }
 
-  // Serve and Trash buttons
+  // Serve and Trash buttons (Chinese needs more height for 12px font)
   var btnX = startX + IBAR_ITEMS.length * (IBAR_SLOT_W + IBAR_GAP) + 4;
-  rect(ctx, btnX, IBAR_Y, 36, 12, PALETTE.uiSuccess);
-  drawTextLocCentered(ctx, t('serve'), btnX + 18, IBAR_Y + 3, '#ffffff', 1);
-  rect(ctx, btnX, IBAR_Y + 15, 36, 12, PALETTE.uiDanger);
-  drawTextLocCentered(ctx, t('trash'), btnX + 18, IBAR_Y + 18, '#ffffff', 1);
+  var btnH = Lang === 'zh' ? 14 : 13;
+  var textY = Lang === 'zh' ? 1 : 3;
+  rect(ctx, btnX, IBAR_Y, 36, btnH, PALETTE.uiSuccess);
+  drawTextLocCentered(ctx, t('serve'), btnX + 18, IBAR_Y + textY, '#ffffff', 1);
+  rect(ctx, btnX, IBAR_Y + btnH + 1, 36, btnH, PALETTE.uiDanger);
+  drawTextLocCentered(ctx, t('trash'), btnX + 18, IBAR_Y + btnH + 1 + textY, '#ffffff', 1);
 }
 
 // ---- Status Bar ----
 function drawStatusBar(ctx) {
-  var y = GAME_H - 22;
-  rect(ctx, 0, y, GAME_W, 22, PALETTE.uiBg);
+  var barH = 26;
+  var y = GAME_H - barH;
+  rect(ctx, 0, y, GAME_W, barH, PALETTE.uiBg);
   rect(ctx, 0, y, GAME_W, 1, PALETTE.uiBorder);
 
-  // DAY
-  drawTextLoc(ctx, t('day') + ' ' + GameState.day, 4, y + 4, PALETTE.uiText, 1);
-  drawText(ctx, '$' + GameState.money, 4, y + 13, PALETTE.uiHighlight, 1);
+  var line2Y = y + 14;
 
-  // SCORE
-  drawTextLoc(ctx, t('score') + ' ' + GameState.score, 70, y + 4, PALETTE.uiText, 1);
+  drawTextLoc(ctx, t('day') + ' ' + GameState.day, 4, y + 3, PALETTE.uiText, 1);
+  drawText(ctx, '$' + GameState.money, 4, line2Y, PALETTE.uiHighlight, 1);
 
-  // SERVED
+  drawTextLoc(ctx, t('score') + ' ' + GameState.score, 70, y + 3, PALETTE.uiText, 1);
   var served = GameState.dayStats.served + '/' + GameState.customersTarget;
-  drawTextLoc(ctx, t('served') + ' ' + served, 70, y + 13, PALETTE.uiText, 1);
+  drawTextLoc(ctx, t('served') + ' ' + served, 70, line2Y, PALETTE.uiText, 1);
 
-  // Reputation stars
   var stars = Math.ceil(GameState.reputation / 20);
-  var starX = 175;
+  var starX = 178;
   for (var i = 0; i < 5; i++) {
     var sprite = i < stars ? SpriteCache.star_filled : SpriteCache.star_empty;
     ctx.drawImage(sprite, starX + i * 9, y + 4);
   }
-  drawTextLoc(ctx, t('rep'), 175, y + 13, PALETTE.cream, 1);
+  drawTextLoc(ctx, t('rep'), 178, line2Y, PALETTE.cream, 1);
 
-  // Streak counter
-  if (GameState.streak >= 2) {
-    drawTextLoc(ctx, t('streak') + ' x' + GameState.streak, 230, y + 4, PALETTE.uiHighlight, 1);
-  } else {
-    drawTextLoc(ctx, t('streak') + ' x' + GameState.streak, 230, y + 4, PALETTE.cupShadow, 1);
-  }
+  var streakColor = GameState.streak >= 2 ? PALETTE.uiHighlight : PALETTE.cupShadow;
+  drawTextLoc(ctx, t('streak') + ' x' + GameState.streak, 230, y + 3, streakColor, 1);
 }
 
 // ---- Processing Progress Bar ----
@@ -295,10 +291,10 @@ function drawProcessingBar(ctx) {
 }
 
 // ---- Language Toggle Button ----
-var LANG_BTN_X = GAME_W - 26;
+var LANG_BTN_W = 36;
+var LANG_BTN_H = 14;
+var LANG_BTN_X = GAME_W - LANG_BTN_W - 2;
 var LANG_BTN_Y = 2;
-var LANG_BTN_W = 22;
-var LANG_BTN_H = 12;
 
 function drawLangButton(ctx) {
   rect(ctx, LANG_BTN_X, LANG_BTN_Y, LANG_BTN_W, LANG_BTN_H, PALETTE.uiBg);
@@ -306,7 +302,9 @@ function drawLangButton(ctx) {
   rect(ctx, LANG_BTN_X, LANG_BTN_Y + LANG_BTN_H - 1, LANG_BTN_W, 1, PALETTE.uiHighlight);
   rect(ctx, LANG_BTN_X, LANG_BTN_Y, 1, LANG_BTN_H, PALETTE.uiHighlight);
   rect(ctx, LANG_BTN_X + LANG_BTN_W - 1, LANG_BTN_Y, 1, LANG_BTN_H, PALETTE.uiHighlight);
-  drawTextLocCentered(ctx, Lang === 'zh' ? '中/EN' : 'EN/中', LANG_BTN_X + LANG_BTN_W / 2, LANG_BTN_Y + 3, PALETTE.uiHighlight, 1);
+  // Always render in bitmap font (English-only label) so it stays compact
+  var label = Lang === 'zh' ? 'CN/EN' : 'EN/CN';
+  drawTextCentered(ctx, label, LANG_BTN_X + LANG_BTN_W / 2, LANG_BTN_Y + 4, PALETTE.uiHighlight, 1);
 }
 
 function isLangButtonClick(gx, gy) {

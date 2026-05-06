@@ -87,7 +87,16 @@ function init() {
   resize();
   window.addEventListener('resize', resize);
 
-  requestAnimationFrame(gameLoop);
+  // Wait for Zpix font to load before starting render loop (avoids flicker
+  // from the system-font fallback on first frame). 1.5s timeout fallback.
+  var startLoop = function() { requestAnimationFrame(gameLoop); };
+  if (document.fonts && document.fonts.load) {
+    var fontLoad = document.fonts.load('12px Zpix', '咖啡');
+    var timeout = new Promise(function(r) { setTimeout(r, 1500); });
+    Promise.race([fontLoad, timeout]).then(startLoop, startLoop);
+  } else {
+    startLoop();
+  }
 }
 
 window.onload = init;

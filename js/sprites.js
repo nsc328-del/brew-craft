@@ -105,31 +105,31 @@ function drawTextCentered(ctx, text, cx, y, color, scale) {
   drawText(ctx, text, Math.floor(cx - w / 2), y, color, scale);
 }
 
-// ---- Chinese text rendering (uses canvas fillText) ----
+// ---- Chinese text rendering (uses Zpix pixel font - 12px native) ----
+// Zpix is a pixel-perfect Chinese font; rendered at 12px native size = pixel sharp
 function drawChinText(ctx, text, x, y, color, scale) {
   scale = scale || 1;
-  var fontSize = 7 * scale;
-  if (scale === 1) fontSize = 8;
+  // Use 12px (Zpix native) at scale=1; scale=2 = 24px etc.
+  var fontSize = 12 * scale;
   ctx.save();
   ctx.fillStyle = color || PALETTE.uiText;
-  ctx.font = fontSize + 'px ui-monospace, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", monospace';
+  ctx.font = fontSize + 'px Zpix, ui-monospace, monospace';
   ctx.textBaseline = 'top';
   ctx.imageSmoothingEnabled = false;
-  ctx.fillText(text, Math.floor(x), Math.floor(y));
+  ctx.fillText(text, Math.round(x), Math.round(y));
   ctx.restore();
 }
 
 function chinTextWidth(text, scale) {
   scale = scale || 1;
-  var fontSize = 7 * scale;
-  if (scale === 1) fontSize = 8;
+  var fontSize = 12 * scale;
   var w = 0;
   for (var i = 0; i < text.length; i++) {
     var ch = text.charCodeAt(i);
     if (ch >= 0x4e00 && ch <= 0x9fff) w += fontSize;
     else if (ch >= 0x3000 && ch <= 0x303f) w += fontSize;
     else if (ch >= 0xff00 && ch <= 0xffef) w += fontSize;
-    else w += fontSize * 0.55;
+    else w += fontSize * 0.5;
   }
   return Math.ceil(w);
 }
